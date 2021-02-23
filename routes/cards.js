@@ -10,7 +10,7 @@ const CardsUtils = require('../utils/cards-utils');
 const MongoDBUtils = require('../utils/mongodb-utils');
 const ValidatorUtils = require('../utils/validator-utils');
 
-// [GET]: get id
+// [GET]: get id (Not functional)
 router.get('/fetch-by-id-:id',
     param('id').customSanitizer(id => ObjectId(id)),
     AuthUtils.parseAndValidateToken,
@@ -33,7 +33,44 @@ router.get('/fetch-by-id-:id',
         }
     });
 
-// [GET] : get collection
+// [GET] get all cards by user id (cards send)
+router.get('/fetch-all-cards-by-user-id',
+    AuthUtils.parseAndValidateToken,
+    async (request, response) => {
+
+        try {
+            const data = request.body;
+
+            const result = await MongoDBUtils.fetchList(COLLECTION, { user_id: ObjectId(data.user_id) });
+
+            return response.json(result);
+
+        } catch (e) {
+            
+            return response.status(500).json(e.stack);
+        }
+    });
+
+// [GET] get all cards by to user id (cards receive)
+
+router.get('/fetch-all-cards-by-to-user-id',
+    AuthUtils.parseAndValidateToken,
+    async (request, response) => {
+
+        try {
+            const data = request.body;
+
+            const result = await MongoDBUtils.fetchList(COLLECTION, { to_user_id: ObjectId(data.to_user_id) });
+
+            return response.json(result);
+
+        } catch (e) {
+            
+            return response.status(500).json(e.stack);
+        }
+    });
+
+// [GET] : get all collection
 router.get('/fetch-list',
     AuthUtils.parseAndValidateToken,
     async (request, response) => {
@@ -51,6 +88,7 @@ router.get('/fetch-list',
     });
 
 
+// [POST] store a new card
 router.post('/store',
     AuthUtils.parseAndValidateToken,
     ValidatorUtils.schema.cards(),
@@ -80,6 +118,7 @@ router.post('/store',
         }
     });
 
+// [PATCH] update card by id
 router.patch('/update-by-id-:id',
     param('id').customSanitizer(id => ObjectId(id)),
     AuthUtils.parseAndValidateToken,
@@ -112,6 +151,7 @@ router.patch('/update-by-id-:id',
         }
     });
 
+// [DELETE] delete by id
 router.delete('/delete-by-id-:id',
     param('id').customSanitizer(id => ObjectId(id)),
     AuthUtils.parseAndValidateToken,
